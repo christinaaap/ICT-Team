@@ -216,7 +216,7 @@ export const DashboardModule: React.FC<DashboardModuleProps> = ({
           <Server className="w-64 h-64 text-white" />
         </div>
 
-        <div className="relative z-10 max-w-3xl">
+        <div className="relative z-10 w-full">
           <div className="flex flex-wrap items-center gap-2 mb-3">
             <span className="text-[11px] uppercase tracking-widest font-mono font-bold text-sky-200 bg-white/15 px-3 py-1 rounded-md inline-flex items-center gap-1.5 backdrop-blur-xs">
               <Building className="w-3.5 h-3.5" />
@@ -231,22 +231,29 @@ export const DashboardModule: React.FC<DashboardModuleProps> = ({
           <h1 className="text-2xl md:text-3xl font-extrabold tracking-tight">
             Selamat Datang, {currentUser.name}
           </h1>
-          <p className="text-xs md:text-sm text-sky-100 mt-2 leading-relaxed">
+          <p className="text-xs md:text-sm text-sky-100 mt-2 leading-relaxed w-full">
             Portal operasional terpadu ICT PT Donggi-Senoro LNG. Memantau integrasi langsung tiket helpdesk staff & IT, status inventaris aset kilang Batui Luwuk dan HO Jakarta, log presensi GPS, serta alur pengajuan cuti.
           </p>
 
-          <div className="mt-5 flex flex-wrap gap-2.5 text-xs">
-            <div className="bg-white/15 px-3 py-1.5 rounded-xl backdrop-blur-xs flex items-center gap-1.5 font-medium">
-              <span className="text-sky-200">Role:</span>
-              <strong className="uppercase font-bold tracking-wide">{currentUser.role.replace('_', ' ')}</strong>
+          <div className="mt-5 flex flex-wrap items-center justify-between gap-3 pt-2 border-t border-white/15">
+            <div className="flex flex-wrap gap-2.5 text-xs">
+              <div className="bg-white/15 px-3 py-1.5 rounded-xl backdrop-blur-xs flex items-center gap-1.5 font-medium">
+                <span className="text-sky-200">Role:</span>
+                <strong className="uppercase font-bold tracking-wide">{currentUser.role.replace('_', ' ')}</strong>
+              </div>
+              <div className="bg-white/15 px-3 py-1.5 rounded-xl backdrop-blur-xs flex items-center gap-1.5 font-medium">
+                <MapPin className="w-3.5 h-3.5 text-sky-300" />
+                <span>{currentUser.work_location === 'HO Jakarta' ? 'HO Jakarta (Sentral Senayan II)' : 'Site Luwuk (Plant Batui)'}</span>
+              </div>
+              <div className="bg-white/15 px-3 py-1.5 rounded-xl backdrop-blur-xs flex items-center gap-1.5 font-medium">
+                <span className="text-sky-200">Dept:</span>
+                <strong>{currentUser.department || 'ICT Operations'}</strong>
+              </div>
             </div>
-            <div className="bg-white/15 px-3 py-1.5 rounded-xl backdrop-blur-xs flex items-center gap-1.5 font-medium">
-              <MapPin className="w-3.5 h-3.5 text-sky-300" />
-              <span>{currentUser.work_location === 'HO Jakarta' ? 'HO Jakarta (Sentral Senayan II)' : 'Site Luwuk (Plant Batui)'}</span>
-            </div>
-            <div className="bg-white/15 px-3 py-1.5 rounded-xl backdrop-blur-xs flex items-center gap-1.5 font-medium">
-              <span className="text-sky-200">Dept:</span>
-              <strong>{currentUser.department || 'ICT Operations'}</strong>
+
+            <div className="hidden sm:flex items-center gap-2 text-xs text-sky-100 bg-black/20 px-3 py-1.5 rounded-xl border border-white/10">
+              <span className="w-2 h-2 rounded-full bg-emerald-400"></span>
+              <span className="font-medium">Sistem ICT Terhubung & Stabil</span>
             </div>
           </div>
         </div>
