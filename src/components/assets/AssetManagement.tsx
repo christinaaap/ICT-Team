@@ -333,6 +333,42 @@ export const AssetManagement: React.FC<AssetManagementProps> = ({
     monitors: assets.filter(a => a.type_name === 'Monitor').length,
   };
 
+  const getDeviceBreakdown = (stateFilter?: AssetState | 'all') => {
+    const list =
+      stateFilter === 'all' || !stateFilter
+        ? assets
+        : assets.filter((a) => (a.asset_state || 'use') === stateFilter);
+    return {
+      laptop: list.filter((a) => a.type_name === 'Laptop').length,
+      desktop: list.filter((a) => a.type_name === 'Desktop').length,
+      monitor: list.filter((a) => a.type_name === 'Monitor').length,
+    };
+  };
+
+  const totalBreakdown = getDeviceBreakdown('all');
+  const inUseBreakdown = getDeviceBreakdown('use');
+  const inStoreBreakdown = getDeviceBreakdown('store');
+  const inLendBreakdown = getDeviceBreakdown('lend');
+  const inServicesBreakdown = getDeviceBreakdown('services');
+  const brokenBreakdown = getDeviceBreakdown('broken');
+
+  const renderDeviceBreakdown = (breakdown: { laptop: number; desktop: number; monitor: number }) => (
+    <div className="mt-2.5 pt-2 border-t border-slate-100 grid grid-cols-3 gap-1 text-center">
+      <div className="bg-slate-50/80 rounded-md py-1 px-0.5" title="Laptop">
+        <div className="text-[9px] text-slate-400 font-medium leading-none">Laptop</div>
+        <div className="text-xs font-bold text-slate-700 mt-0.5">{breakdown.laptop}</div>
+      </div>
+      <div className="bg-slate-50/80 rounded-md py-1 px-0.5" title="Desktop / PC">
+        <div className="text-[9px] text-slate-400 font-medium leading-none">PC</div>
+        <div className="text-xs font-bold text-slate-700 mt-0.5">{breakdown.desktop}</div>
+      </div>
+      <div className="bg-slate-50/80 rounded-md py-1 px-0.5" title="Monitor">
+        <div className="text-[9px] text-slate-400 font-medium leading-none">Monitor</div>
+        <div className="text-xs font-bold text-slate-700 mt-0.5">{breakdown.monitor}</div>
+      </div>
+    </div>
+  );
+
   return (
     <div className="space-y-6">
       
@@ -393,41 +429,94 @@ export const AssetManagement: React.FC<AssetManagementProps> = ({
         </div>
       </div>
 
-      {/* Metrics Summary Strip with Asset State Breakdown */}
+      {/* Metrics Summary Strip with Asset State Breakdown & Device Types */}
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
-        <div className="bg-white p-3.5 rounded-xl border border-slate-200 shadow-xs">
+        {/* Total Asset */}
+        <div
+          onClick={() => setFilterState('all')}
+          className={`bg-white p-3.5 rounded-xl border transition cursor-pointer shadow-xs hover:border-[#004380]/40 ${
+            filterState === 'all' ? 'ring-2 ring-[#004380]/20 border-[#004380]' : 'border-slate-200'
+          }`}
+          title="Klik untuk filter semua asset"
+        >
           <div className="text-[11px] font-semibold text-slate-500">Total Asset</div>
-          <div className="text-xl font-bold text-slate-900 mt-0.5">{stats.total}</div>
+          <div className="text-xl font-extrabold text-slate-900 mt-0.5">{stats.total}</div>
+          {renderDeviceBreakdown(totalBreakdown)}
         </div>
-        <div className="bg-white p-3.5 rounded-xl border border-slate-200 shadow-xs">
+
+        {/* In Use (Aktif) */}
+        <div
+          onClick={() => setFilterState('use')}
+          className={`bg-white p-3.5 rounded-xl border transition cursor-pointer shadow-xs hover:border-emerald-400 ${
+            filterState === 'use' ? 'ring-2 ring-emerald-200 border-emerald-500' : 'border-slate-200'
+          }`}
+          title="Klik untuk filter asset In Use"
+        >
           <div className="text-[11px] font-semibold text-slate-500 flex items-center gap-1">
             <span className="w-2 h-2 rounded-full bg-emerald-500"></span> In Use (Aktif)
           </div>
-          <div className="text-xl font-bold text-emerald-700 mt-0.5">{stats.inUse}</div>
+          <div className="text-xl font-extrabold text-emerald-700 mt-0.5">{stats.inUse}</div>
+          {renderDeviceBreakdown(inUseBreakdown)}
         </div>
-        <div className="bg-white p-3.5 rounded-xl border border-slate-200 shadow-xs">
+
+        {/* In Store (Gudang) */}
+        <div
+          onClick={() => setFilterState('store')}
+          className={`bg-white p-3.5 rounded-xl border transition cursor-pointer shadow-xs hover:border-sky-400 ${
+            filterState === 'store' ? 'ring-2 ring-sky-200 border-[#004380]' : 'border-slate-200'
+          }`}
+          title="Klik untuk filter asset In Store"
+        >
           <div className="text-[11px] font-semibold text-slate-500 flex items-center gap-1">
             <Package className="w-3.5 h-3.5 text-[#00A3E0]" /> In Store (Gudang)
           </div>
-          <div className="text-xl font-bold text-[#004380] mt-0.5">{stats.inStore}</div>
+          <div className="text-xl font-extrabold text-[#004380] mt-0.5">{stats.inStore}</div>
+          {renderDeviceBreakdown(inStoreBreakdown)}
         </div>
-        <div className="bg-white p-3.5 rounded-xl border border-slate-200 shadow-xs">
+
+        {/* Lend (Dipinjam) */}
+        <div
+          onClick={() => setFilterState('lend')}
+          className={`bg-white p-3.5 rounded-xl border transition cursor-pointer shadow-xs hover:border-amber-400 ${
+            filterState === 'lend' ? 'ring-2 ring-amber-200 border-amber-500' : 'border-slate-200'
+          }`}
+          title="Klik untuk filter asset Lend"
+        >
           <div className="text-[11px] font-semibold text-slate-500 flex items-center gap-1">
             <Clock className="w-3.5 h-3.5 text-amber-600" /> Lend (Dipinjam)
           </div>
-          <div className="text-xl font-bold text-amber-700 mt-0.5">{stats.inLend}</div>
+          <div className="text-xl font-extrabold text-amber-700 mt-0.5">{stats.inLend}</div>
+          {renderDeviceBreakdown(inLendBreakdown)}
         </div>
-        <div className="bg-white p-3.5 rounded-xl border border-slate-200 shadow-xs">
+
+        {/* Services (Servis) */}
+        <div
+          onClick={() => setFilterState('services')}
+          className={`bg-white p-3.5 rounded-xl border transition cursor-pointer shadow-xs hover:border-purple-400 ${
+            filterState === 'services' ? 'ring-2 ring-purple-200 border-purple-500' : 'border-slate-200'
+          }`}
+          title="Klik untuk filter asset Services"
+        >
           <div className="text-[11px] font-semibold text-slate-500 flex items-center gap-1">
             <Wrench className="w-3.5 h-3.5 text-purple-600" /> Services (Servis)
           </div>
-          <div className="text-xl font-bold text-purple-700 mt-0.5">{stats.inServices}</div>
+          <div className="text-xl font-extrabold text-purple-700 mt-0.5">{stats.inServices}</div>
+          {renderDeviceBreakdown(inServicesBreakdown)}
         </div>
-        <div className="bg-white p-3.5 rounded-xl border border-slate-200 shadow-xs">
+
+        {/* Broken (Afkir) */}
+        <div
+          onClick={() => setFilterState('broken')}
+          className={`bg-white p-3.5 rounded-xl border transition cursor-pointer shadow-xs hover:border-rose-400 ${
+            filterState === 'broken' ? 'ring-2 ring-rose-200 border-rose-500' : 'border-slate-200'
+          }`}
+          title="Klik untuk filter asset Broken"
+        >
           <div className="text-[11px] font-semibold text-slate-500 flex items-center gap-1">
             <AlertOctagon className="w-3.5 h-3.5 text-rose-600" /> Broken (Afkir)
           </div>
-          <div className="text-xl font-bold text-rose-700 mt-0.5">{stats.broken}</div>
+          <div className="text-xl font-extrabold text-rose-700 mt-0.5">{stats.broken}</div>
+          {renderDeviceBreakdown(brokenBreakdown)}
         </div>
       </div>
 
