@@ -60,13 +60,12 @@ interface HelpdeskProps {
   onClearAllTickets?: () => void;
 }
 
-// Directorate to Primary Work Location Configuration
+// Directorate to Primary Work Location Configuration (All 4 Directorates operate at both Site Luwuk and HO Jakarta)
 export const DIRECTORATE_LOCATION_CONFIG: Record<
   Department,
   {
-    primaryLocation: WorkLocation | 'Both';
+    locations: WorkLocation[];
     locationLabel: string;
-    locationShort: string;
     description: string;
     badgeBg: string;
     badgeText: string;
@@ -74,36 +73,32 @@ export const DIRECTORATE_LOCATION_CONFIG: Record<
   }
 > = {
   'President Directorate': {
-    primaryLocation: 'HO Jakarta',
-    locationLabel: 'HO Jakarta (Senayan)',
-    locationShort: 'HO Jakarta',
-    description: 'Executive Management & Board Office',
+    locations: ['Site Luwuk', 'HO Jakarta'],
+    locationLabel: 'Site Luwuk & HO Jakarta',
+    description: 'Executive Management & Board Governance',
     badgeBg: 'bg-purple-50',
     badgeText: 'text-purple-700',
     badgeBorder: 'border-purple-200',
   },
   'Operations Directorate': {
-    primaryLocation: 'Site Luwuk',
-    locationLabel: 'Site Luwuk (Plant Batui)',
-    locationShort: 'Site Luwuk',
+    locations: ['Site Luwuk', 'HO Jakarta'],
+    locationLabel: 'Site Luwuk & HO Jakarta',
     description: 'LNG Plant Operations, Maintenance & Production',
     badgeBg: 'bg-amber-50',
     badgeText: 'text-amber-800',
     badgeBorder: 'border-amber-200',
   },
   'Finance Directorate': {
-    primaryLocation: 'HO Jakarta',
-    locationLabel: 'HO Jakarta (Senayan)',
-    locationShort: 'HO Jakarta',
+    locations: ['Site Luwuk', 'HO Jakarta'],
+    locationLabel: 'Site Luwuk & HO Jakarta',
     description: 'Treasury, Accounting & Financial Governance',
     badgeBg: 'bg-sky-50',
     badgeText: 'text-[#004380]',
     badgeBorder: 'border-sky-200',
   },
   'Corporate Affairs Director': {
-    primaryLocation: 'Both',
+    locations: ['Site Luwuk', 'HO Jakarta'],
     locationLabel: 'Site Luwuk & HO Jakarta',
-    locationShort: 'Site & HO',
     description: 'ICT, HR, CSR, Legal & External Relations',
     badgeBg: 'bg-emerald-50',
     badgeText: 'text-emerald-800',
@@ -172,15 +167,6 @@ export const HelpdeskTicketing: React.FC<HelpdeskProps> = ({
 
   const handleDepartmentChange = (newDept: Department) => {
     setFormDepartment(newDept);
-    // Auto-adjust work location according to directorate
-    if (newDept === 'Operations Directorate') {
-      setFormWorkLocation('Site Luwuk');
-    } else if (newDept === 'President Directorate' || newDept === 'Finance Directorate') {
-      setFormWorkLocation('HO Jakarta');
-    } else if (newDept === 'Corporate Affairs Director') {
-      // Retain existing or default to Site Luwuk
-      if (!formWorkLocation) setFormWorkLocation('Site Luwuk');
-    }
   };
 
   const handleCreateTicket = (e: React.FormEvent) => {
@@ -528,7 +514,7 @@ export const HelpdeskTicketing: React.FC<HelpdeskProps> = ({
             </div>
           </div>
 
-          {/* 4 Directorates Cards with Work Location Mappings */}
+          {/* 4 Directorates Cards with Dual Work Location (Site Luwuk & HO Jakarta) */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3.5">
             {directorateStats.map((d) => (
               <div
@@ -544,7 +530,7 @@ export const HelpdeskTicketing: React.FC<HelpdeskProps> = ({
                     : 'border-slate-200 hover:border-slate-300 bg-white hover:bg-slate-50/80'
                 }`}
               >
-                <div className="space-y-1.5">
+                <div className="space-y-2">
                   <div className="flex items-center justify-between">
                     <div className="text-xs font-bold text-slate-900 truncate pr-2">
                       {d.department}
@@ -554,17 +540,15 @@ export const HelpdeskTicketing: React.FC<HelpdeskProps> = ({
                     </span>
                   </div>
 
-                  {/* Work Location Tag matched to Directorate */}
-                  <div className="flex items-center gap-1">
-                    <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md border text-[10px] font-bold ${d.config.badgeBg} ${d.config.badgeText} ${d.config.badgeBorder}`}>
-                      {d.config.primaryLocation === 'Site Luwuk' ? (
-                        <Flame className="w-2.5 h-2.5 text-amber-500" />
-                      ) : d.config.primaryLocation === 'HO Jakarta' ? (
-                        <Building2 className="w-2.5 h-2.5 text-[#00A3E0]" />
-                      ) : (
-                        <MapPin className="w-2.5 h-2.5 text-emerald-600" />
-                      )}
-                      <span>{d.config.locationLabel}</span>
+                  {/* Dual Work Location Tags: Site Luwuk & HO Jakarta for all Directorates */}
+                  <div className="flex items-center gap-1.5 flex-wrap">
+                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[9.5px] font-bold bg-amber-50 text-amber-800 border border-amber-200">
+                      <Flame className="w-2.5 h-2.5 text-amber-500" />
+                      Site Luwuk
+                    </span>
+                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[9.5px] font-bold bg-sky-50 text-[#004380] border border-sky-200">
+                      <Building2 className="w-2.5 h-2.5 text-[#00A3E0]" />
+                      HO Jakarta
                     </span>
                   </div>
                 </div>
@@ -575,10 +559,14 @@ export const HelpdeskTicketing: React.FC<HelpdeskProps> = ({
                       <span className="text-2xl font-extrabold text-[#004380]">{d.total}</span>
                       <span className="text-[10px] text-slate-500 font-medium">Tiket</span>
                     </div>
-                    <div className="text-[10px] text-slate-500 font-medium flex items-center gap-1.5">
-                      <span className="text-amber-700 font-semibold" title="Tiket dari Site Luwuk">Site: {d.siteCount}</span>
+                    <div className="text-[10.5px] text-slate-600 font-semibold flex items-center gap-1.5">
+                      <span className="inline-flex items-center gap-1 text-amber-800 bg-amber-50/90 px-1.5 py-0.5 rounded border border-amber-200" title="Tiket dari Site Luwuk (Plant)">
+                        <Flame className="w-2.5 h-2.5 text-amber-500" /> Site: {d.siteCount}
+                      </span>
                       <span className="text-slate-300">&bull;</span>
-                      <span className="text-purple-700 font-semibold" title="Tiket dari HO Jakarta">HO: {d.hoCount}</span>
+                      <span className="inline-flex items-center gap-1 text-[#004380] bg-sky-50/90 px-1.5 py-0.5 rounded border border-sky-200" title="Tiket dari HO Jakarta (Senayan)">
+                        <Building2 className="w-2.5 h-2.5 text-[#00A3E0]" /> HO: {d.hoCount}
+                      </span>
                     </div>
                   </div>
                 </div>
@@ -945,7 +933,7 @@ export const HelpdeskTicketing: React.FC<HelpdeskProps> = ({
                 </div>
               )}
 
-              {/* Directorate & Work Location Selector (Auto-synchronized) */}
+              {/* Directorate & Work Location Selector */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 bg-sky-50/40 p-3.5 rounded-xl border border-sky-200">
                 <div>
                   <label className="block text-[11px] font-bold text-slate-700 uppercase tracking-wider mb-1">
@@ -956,16 +944,16 @@ export const HelpdeskTicketing: React.FC<HelpdeskProps> = ({
                     onChange={(e) => handleDepartmentChange(e.target.value as Department)}
                     className="w-full px-2.5 py-1.5 bg-white border border-slate-300 rounded-lg text-xs font-semibold text-slate-800 focus:ring-2 focus:ring-[#004380] outline-none"
                   >
-                    <option value="President Directorate">President Directorate (HO)</option>
-                    <option value="Operations Directorate">Operations Directorate (Site)</option>
-                    <option value="Finance Directorate">Finance Directorate (HO)</option>
-                    <option value="Corporate Affairs Director">Corporate Affairs Director (Site & HO)</option>
+                    <option value="President Directorate">President Directorate</option>
+                    <option value="Operations Directorate">Operations Directorate</option>
+                    <option value="Finance Directorate">Finance Directorate</option>
+                    <option value="Corporate Affairs Director">Corporate Affairs Director</option>
                   </select>
                 </div>
 
                 <div>
                   <label className="block text-[11px] font-bold text-slate-700 uppercase tracking-wider mb-1">
-                    Lokasi Kerja
+                    Lokasi Kerja Pelapor
                   </label>
                   <select
                     value={formWorkLocation}
@@ -979,7 +967,7 @@ export const HelpdeskTicketing: React.FC<HelpdeskProps> = ({
 
                 <div className="sm:col-span-2 text-[10px] text-sky-800 font-medium flex items-center gap-1.5">
                   <MapPin className="w-3 h-3 text-[#00A3E0]" />
-                  <span>Lokasi kerja diselaraskan otomatis dengan direktorat ({DIRECTORATE_LOCATION_CONFIG[formDepartment].locationLabel}).</span>
+                  <span>Setiap direktorat beroperasi di 2 lokasi kerja (Site Luwuk &amp; HO Jakarta). Silakan tentukan lokasi kerja tiket ini.</span>
                 </div>
               </div>
 
