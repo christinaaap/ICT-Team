@@ -108,11 +108,8 @@ export const Header: React.FC<HeaderProps> = ({
             <DslngLogo variant="white" size="md" />
             <div className="hidden lg:block h-6 w-px bg-slate-700"></div>
             <div className="hidden md:flex flex-col">
-              <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 font-mono">
-                DSLNG ICT PORTAL
-              </span>
-              <span className="text-xs font-bold text-sky-400">
-                {(currentUser?.work_location || 'Site Luwuk') === 'Site Luwuk' ? 'Kilang LNG Batui, Site Luwuk' : 'Head Office Jakarta'}
+              <span className="text-xs font-bold tracking-wider text-slate-200">
+                Portal ICT Departement
               </span>
             </div>
           </div>

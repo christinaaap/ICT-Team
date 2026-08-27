@@ -88,32 +88,14 @@ export const PersonalizeModal: React.FC<PersonalizeModalProps> = ({
               <Layout className="w-4 h-4 text-[#00A3E0]" />
               <span>Kerapatan Tata Letak (Density)</span>
             </label>
-            <div className="grid grid-cols-2 gap-3">
-              <button
-                type="button"
-                onClick={() => onUpdatePreferences({ ...preferences, themeDensity: 'comfortable' })}
-                className={`p-3 text-left rounded-xl border transition ${
-                  preferences.themeDensity === 'comfortable'
-                    ? 'border-[#004380] bg-sky-50/50 ring-1 ring-[#004380]'
-                    : 'border-slate-200 hover:bg-slate-50'
-                }`}
-              >
-                <div className="font-bold text-xs text-slate-800 mb-0.5">Comfortable (Standar)</div>
-                <div className="text-[11px] text-slate-500">Spasi proporsional untuk kemudahan navigasi harian.</div>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => onUpdatePreferences({ ...preferences, themeDensity: 'compact' })}
-                className={`p-3 text-left rounded-xl border transition ${
-                  preferences.themeDensity === 'compact'
-                    ? 'border-[#004380] bg-sky-50/50 ring-1 ring-[#004380]'
-                    : 'border-slate-200 hover:bg-slate-50'
-                }`}
-              >
-                <div className="font-bold text-xs text-slate-800 mb-0.5">Compact (Dense Data)</div>
-                <div className="text-[11px] text-slate-500">Kerapatan tinggi untuk monitoring tabel aset & tiket besar.</div>
-              </button>
+            <div>
+              <div className="p-3 border-2 border-[#004380] bg-sky-50/50 rounded-xl flex items-center justify-between">
+                <div>
+                  <div className="font-bold text-xs text-slate-800 mb-0.5">Comfortable (Standar)</div>
+                  <div className="text-[11px] text-slate-500">Spasi proporsional untuk kenyamanan dan kemudahan navigasi harian.</div>
+                </div>
+                <Check className="w-4 h-4 text-[#004380] shrink-0 ml-3" />
+              </div>
             </div>
           </div>
 
@@ -166,7 +148,7 @@ export const PersonalizeModal: React.FC<PersonalizeModalProps> = ({
           </div>
 
           {/* Section 4: Operational Settings */}
-          <div className="bg-slate-50 p-3.5 rounded-xl border border-slate-200 space-y-3">
+          <div className="bg-slate-50 p-3.5 rounded-xl border border-slate-200">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <Clock className="w-4 h-4 text-slate-600" />
@@ -182,27 +164,6 @@ export const PersonalizeModal: React.FC<PersonalizeModalProps> = ({
                   onUpdatePreferences({
                     ...preferences,
                     clockFormat: e.target.checked ? 'both' : 'local',
-                  })
-                }
-                className="w-4 h-4 accent-[#004380] rounded cursor-pointer"
-              />
-            </div>
-
-            <div className="flex items-center justify-between pt-2 border-t border-slate-200">
-              <div className="flex items-center gap-2">
-                <Eye className="w-4 h-4 text-slate-600" />
-                <div>
-                  <div className="text-xs font-bold text-slate-800">Mode Kontras Tinggi (CCR Room)</div>
-                  <div className="text-[11px] text-slate-500">Meningkatkan ketegasan garis tepi dan border</div>
-                </div>
-              </div>
-              <input
-                type="checkbox"
-                checked={preferences.highContrast}
-                onChange={(e) =>
-                  onUpdatePreferences({
-                    ...preferences,
-                    highContrast: e.target.checked,
                   })
                 }
                 className="w-4 h-4 accent-[#004380] rounded cursor-pointer"
