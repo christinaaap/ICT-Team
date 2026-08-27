@@ -501,16 +501,15 @@ export const AssetManagement: React.FC<AssetManagementProps> = ({
                 <th className="py-3 px-4">Serial Number</th>
                 <th className="py-3 px-4">Hostname</th>
                 <th className="py-3 px-4">Asset State</th>
-                <th className="py-3 px-4">User Penanggung Jawab</th>
-                <th className="py-3 px-4">Lokasi Kerja & Ruangan</th>
-                <th className="py-3 px-4">Aplikasi Terinstal</th>
+                <th className="py-3 px-4">User</th>
+                <th className="py-3 px-4">Lokasi</th>
                 <th className="py-3 px-4 text-right">Aksi</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 text-slate-600">
               {filteredAssets.length === 0 ? (
                 <tr>
-                  <td colSpan={8} className="py-8 text-center text-slate-400">
+                  <td colSpan={7} className="py-8 text-center text-slate-400">
                     Tidak ada data asset yang sesuai dengan kriteria pencarian.
                   </td>
                 </tr>
@@ -556,28 +555,6 @@ export const AssetManagement: React.FC<AssetManagementProps> = ({
                         <span>{asset.work_location}</span>
                       </div>
                       <div className="text-[10px] text-slate-500 pl-5">{asset.location}</div>
-                    </td>
-
-                    <td className="py-3 px-4 max-w-xs">
-                      {asset.installed_apps && asset.installed_apps.length > 0 ? (
-                        <div className="flex flex-wrap gap-1">
-                          {asset.installed_apps.slice(0, 3).map((app, idx) => (
-                            <span
-                              key={idx}
-                              className="text-[9px] bg-slate-100 text-slate-700 px-1.5 py-0.5 rounded border border-slate-200"
-                            >
-                              {app}
-                            </span>
-                          ))}
-                          {asset.installed_apps.length > 3 && (
-                            <span className="text-[9px] bg-slate-200 text-slate-600 px-1 rounded">
-                              +{asset.installed_apps.length - 3}
-                            </span>
-                          )}
-                        </div>
-                      ) : (
-                        <span className="text-[10px] text-slate-400">-</span>
-                      )}
                     </td>
 
                     <td className="py-3 px-4 text-right">
@@ -806,7 +783,7 @@ export const AssetManagement: React.FC<AssetManagementProps> = ({
 
                 <div>
                   <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
-                    User Penanggung Jawab
+                    User
                   </label>
                   <select
                     value={formData.user_id || ''}

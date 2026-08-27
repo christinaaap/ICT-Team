@@ -73,7 +73,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
       label: 'Data Asset',
       icon: Server,
       show: canAccessAssets,
-      badge: 'Bulk Import',
       description: 'Inventaris Laptop, PC, Monitor',
     },
     {
