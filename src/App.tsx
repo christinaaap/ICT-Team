@@ -342,6 +342,10 @@ export function App() {
     setAttendances((prev) => [att, ...prev]);
   };
 
+  const handleUpdateAttendance = (updated: Attendance) => {
+    setAttendances((prev) => prev.map((a) => (a.id === updated.id ? updated : a)));
+  };
+
   // Leave Handlers
   const handleAddLeave = (leave: LeaveRequest) => {
     setLeaves((prev) => [leave, ...prev]);
@@ -537,6 +541,7 @@ export function App() {
                     attendances={attendances}
                     currentUser={currentUser}
                     onAddAttendance={handleAddAttendance}
+                    onUpdateAttendance={handleUpdateAttendance}
                   />
                 )}
 

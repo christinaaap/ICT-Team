@@ -78,7 +78,9 @@ export interface Attendance {
   user_email: string;
   user_role: Role;
   clock_in: string;
+  clock_out?: string | null;
   photo_path: string; // Base64 data URL
+  clock_out_photo_path?: string | null;
   latitude: string;
   longitude: string;
   work_location: WorkLocation;

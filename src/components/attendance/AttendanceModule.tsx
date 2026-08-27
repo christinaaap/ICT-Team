@@ -24,12 +24,14 @@ interface AttendanceModuleProps {
   attendances: Attendance[];
   currentUser: User;
   onAddAttendance: (att: Attendance) => void;
+  onUpdateAttendance?: (att: Attendance) => void;
 }
 
 export const AttendanceModule: React.FC<AttendanceModuleProps> = ({
   attendances,
   currentUser,
   onAddAttendance,
+  onUpdateAttendance,
 }) => {
   const [cameraActive, setCameraActive] = useState(false);
   const [capturedPhoto, setCapturedPhoto] = useState<string | null>(null);
@@ -38,6 +40,7 @@ export const AttendanceModule: React.FC<AttendanceModuleProps> = ({
   const [locationStatus, setLocationStatus] = useState<string>('Mencari titik koordinat GPS...');
   const [selectedPhotoModal, setSelectedPhotoModal] = useState<Attendance | null>(null);
   const [selectedLocation, setSelectedLocation] = useState<WorkLocation>(currentUser.work_location);
+  const [attendanceMode, setAttendanceMode] = useState<'clock_in' | 'clock_out'>('clock_in');
   const [attendanceNote, setAttendanceNote] = useState('');
 
   const videoRef = useRef<HTMLVideoElement | null>(null);
@@ -157,7 +160,7 @@ export const AttendanceModule: React.FC<AttendanceModuleProps> = ({
         ctx.fillRect(0, canvas.height - 40, canvas.width, 40);
         ctx.fillStyle = '#FFFFFF';
         ctx.font = '14px sans-serif';
-        const stamp = `PT DSLNG PRESENSI | ${currentUser.name} | ${new Date().toLocaleString('id-ID')} | ${selectedLocation}`;
+        const stamp = `PT DSLNG PRESENSI (${attendanceMode === 'clock_out' ? 'CLOCK-OUT' : 'CLOCK-IN'}) | ${currentUser.name} | ${new Date().toLocaleString('id-ID')} | ${selectedLocation}`;
         ctx.fillText(stamp, 15, canvas.height - 15);
 
         const dataUrl = canvas.toDataURL('image/jpeg', 0.85);
@@ -174,7 +177,7 @@ export const AttendanceModule: React.FC<AttendanceModuleProps> = ({
         ctx.fillRect(0, 0, 400, 300);
         ctx.fillStyle = '#FFFFFF';
         ctx.font = 'bold 18px sans-serif';
-        ctx.fillText(currentUser.name, 30, 80);
+        ctx.fillText(`${currentUser.name} (${attendanceMode.toUpperCase()})`, 30, 80);
         ctx.font = '14px sans-serif';
         ctx.fillText(`Lokasi: ${selectedLocation}`, 30, 120);
         ctx.fillText(new Date().toLocaleString('id-ID'), 30, 160);
@@ -183,32 +186,74 @@ export const AttendanceModule: React.FC<AttendanceModuleProps> = ({
     }
   };
 
-  // Clock In Submit
-  const handleClockIn = () => {
+  // Submit Clock In / Clock Out
+  const handleSaveAttendance = () => {
     // Check camera & GPS
     if (!capturedPhoto || !coords) {
       notifyError('Absensi gagal: Mohon berikan izin akses Kamera dan Lokasi (GPS) pada browser Anda.');
       return;
     }
 
-    const newAttendance: Attendance = {
-      id: Date.now(),
-      user_id: currentUser.id,
-      user_name: currentUser.name,
-      user_email: currentUser.email,
-      user_role: currentUser.role,
-      clock_in: new Date().toISOString(),
-      photo_path: capturedPhoto,
-      latitude: coords.latitude,
-      longitude: coords.longitude,
-      work_location: selectedLocation,
-      status: `Presensi Terverifikasi (${selectedLocation})`,
-      notes: attendanceNote || 'Presensi IT Helpdesk Shift Harian',
-      created_at: new Date().toISOString(),
-    };
+    if (attendanceMode === 'clock_in') {
+      const newAttendance: Attendance = {
+        id: Date.now(),
+        user_id: currentUser.id,
+        user_name: currentUser.name,
+        user_email: currentUser.email,
+        user_role: currentUser.role,
+        clock_in: new Date().toISOString(),
+        photo_path: capturedPhoto,
+        latitude: coords.latitude,
+        longitude: coords.longitude,
+        work_location: selectedLocation,
+        status: `Presensi Masuk (${selectedLocation})`,
+        notes: attendanceNote || 'Presensi IT Helpdesk Shift Harian',
+        created_at: new Date().toISOString(),
+      };
 
-    onAddAttendance(newAttendance);
-    notifySuccess(`Absensi berhasil direkam pada lokasi [${selectedLocation}]. Selamat bekerja!`);
+      onAddAttendance(newAttendance);
+      notifySuccess(`Clock-in berhasil direkam pada lokasi [${selectedLocation}]. Selamat bekerja!`);
+    } else {
+      // Clock-Out
+      const openAttendance = attendances.find(
+        (a) => a.user_id === currentUser.id && !a.clock_out
+      );
+
+      if (openAttendance && onUpdateAttendance) {
+        const updated: Attendance = {
+          ...openAttendance,
+          clock_out: new Date().toISOString(),
+          clock_out_photo_path: capturedPhoto,
+          status: `Presensi Selesai (${selectedLocation})`,
+          notes: attendanceNote
+            ? `${openAttendance.notes || ''} | Out: ${attendanceNote}`.trim()
+            : openAttendance.notes,
+        };
+        onUpdateAttendance(updated);
+        notifySuccess(`Clock-out berhasil direkam pada lokasi [${selectedLocation}]. Terima kasih atas dedikasinya!`);
+      } else {
+        const newAttendance: Attendance = {
+          id: Date.now(),
+          user_id: currentUser.id,
+          user_name: currentUser.name,
+          user_email: currentUser.email,
+          user_role: currentUser.role,
+          clock_in: new Date().toISOString(),
+          clock_out: new Date().toISOString(),
+          photo_path: capturedPhoto,
+          clock_out_photo_path: capturedPhoto,
+          latitude: coords.latitude,
+          longitude: coords.longitude,
+          work_location: selectedLocation,
+          status: `Presensi Pulang (${selectedLocation})`,
+          notes: attendanceNote || 'Presensi IT Helpdesk Clock-Out',
+          created_at: new Date().toISOString(),
+        };
+        onAddAttendance(newAttendance);
+        notifySuccess(`Clock-out berhasil direkam pada lokasi [${selectedLocation}].`);
+      }
+    }
+
     setCapturedPhoto(null);
     setAttendanceNote('');
   };
@@ -306,12 +351,39 @@ export const AttendanceModule: React.FC<AttendanceModuleProps> = ({
             </div>
           </div>
 
-          {/* Location & Clock-In Form */}
+          {/* Location & Clock-In / Clock-Out Form */}
           <div className="lg:col-span-5 bg-white rounded-2xl border border-slate-200 shadow-xs p-5 flex flex-col justify-between space-y-4">
             <div className="space-y-4">
-              <div className="flex items-center gap-2 text-xs font-bold text-slate-800">
-                <Compass className="w-4 h-4 text-[#00A3E0]" />
-                <span>Verifikasi Titik Geolocation</span>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2 text-xs font-bold text-slate-800">
+                  <Compass className="w-4 h-4 text-[#00A3E0]" />
+                  <span>Verifikasi & Jenis Presensi</span>
+                </div>
+                {/* Attendance Mode Selector */}
+                <div className="flex bg-slate-100 p-0.5 rounded-lg border border-slate-200">
+                  <button
+                    type="button"
+                    onClick={() => setAttendanceMode('clock_in')}
+                    className={`px-3 py-1 text-[11px] font-bold rounded-md transition ${
+                      attendanceMode === 'clock_in'
+                        ? 'bg-[#004380] text-white shadow-2xs'
+                        : 'text-slate-600 hover:text-slate-900'
+                    }`}
+                  >
+                    Clock-In (Masuk)
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setAttendanceMode('clock_out')}
+                    className={`px-3 py-1 text-[11px] font-bold rounded-md transition ${
+                      attendanceMode === 'clock_out'
+                        ? 'bg-amber-600 text-white shadow-2xs'
+                        : 'text-slate-600 hover:text-slate-900'
+                    }`}
+                  >
+                    Clock-Out (Pulang)
+                  </button>
+                </div>
               </div>
 
               {/* Selected Work Location */}
@@ -413,21 +485,29 @@ export const AttendanceModule: React.FC<AttendanceModuleProps> = ({
                   type="text"
                   value={attendanceNote}
                   onChange={(e) => setAttendanceNote(e.target.value)}
-                  placeholder="Contoh: Piket Shift Pagi CCR & Network Room Batui"
+                  placeholder={attendanceMode === 'clock_in' ? 'Contoh: Piket Shift Pagi CCR & Network Room Batui' : 'Contoh: Pekerjaan maintenance switch rack selesai'}
                   className="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg text-xs focus:ring-2 focus:ring-[#004380] outline-none"
                 />
               </div>
             </div>
 
-            {/* Clock-in Button */}
+            {/* Clock-in / Clock-out Button */}
             <div className="pt-4 border-t border-slate-100">
               <button
                 type="button"
-                onClick={handleClockIn}
-                className="w-full py-3 bg-[#004380] hover:bg-[#003366] text-white text-xs font-bold rounded-xl shadow-md flex items-center justify-center gap-2 transition"
+                onClick={handleSaveAttendance}
+                className={`w-full py-3 text-white text-xs font-bold rounded-xl shadow-md flex items-center justify-center gap-2 transition ${
+                  attendanceMode === 'clock_in'
+                    ? 'bg-[#004380] hover:bg-[#003366]'
+                    : 'bg-amber-600 hover:bg-amber-700'
+                }`}
               >
-                <CheckCircle2 className="w-4 h-4 text-emerald-400" />
-                <span>Simpan Rekam Absensi (Clock-In)</span>
+                <CheckCircle2 className="w-4 h-4 text-emerald-300" />
+                <span>
+                  {attendanceMode === 'clock_in'
+                    ? 'Simpan Rekam Absensi (Clock-In)'
+                    : 'Simpan Rekam Absensi (Clock-Out)'}
+                </span>
               </button>
             </div>
           </div>
@@ -449,8 +529,9 @@ export const AttendanceModule: React.FC<AttendanceModuleProps> = ({
           <table className="w-full text-left text-xs">
             <thead className="bg-slate-50 text-slate-700 font-bold border-b border-slate-200 uppercase tracking-wider">
               <tr>
-                <th className="py-3 px-4">Nama Petugas & Role</th>
+                <th className="py-3 px-4">Nama Helpdesk</th>
                 <th className="py-3 px-4">Waktu Clock-In</th>
+                <th className="py-3 px-4">Waktu Clock-Out</th>
                 <th className="py-3 px-4">Lokasi Penugasan</th>
                 <th className="py-3 px-4">Koordinat GPS (Lat, Lng)</th>
                 <th className="py-3 px-4">Status Verifikasi</th>
@@ -460,7 +541,7 @@ export const AttendanceModule: React.FC<AttendanceModuleProps> = ({
             <tbody className="divide-y divide-slate-100 text-slate-600">
               {attendances.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="py-8 text-center text-slate-400">
+                  <td colSpan={7} className="py-8 text-center text-slate-400">
                     Belum ada rekam data presensi helpdesk yang tersimpan.
                   </td>
                 </tr>
@@ -487,6 +568,32 @@ export const AttendanceModule: React.FC<AttendanceModuleProps> = ({
                           second: '2-digit',
                         })}
                       </div>
+                    </td>
+
+                    <td className="py-3 px-4">
+                      {att.clock_out ? (
+                        <>
+                          <div className="font-semibold text-slate-800">
+                            {new Date(att.clock_out).toLocaleDateString('id-ID', {
+                              day: 'numeric',
+                              month: 'short',
+                              year: 'numeric',
+                            })}
+                          </div>
+                          <div className="text-[10px] text-slate-500 font-mono">
+                            {new Date(att.clock_out).toLocaleTimeString('id-ID', {
+                              hour: '2-digit',
+                              minute: '2-digit',
+                              second: '2-digit',
+                            })}
+                          </div>
+                        </>
+                      ) : (
+                        <span className="inline-flex items-center gap-1 text-[10px] font-semibold bg-amber-50 text-amber-800 border border-amber-200 px-2 py-0.5 rounded-md">
+                          <Clock className="w-2.5 h-2.5 text-amber-600" />
+                          Belum Clock-Out
+                        </span>
+                      )}
                     </td>
 
                     <td className="py-3 px-4">
@@ -559,11 +666,19 @@ export const AttendanceModule: React.FC<AttendanceModuleProps> = ({
 
               <div className="bg-slate-50 p-3 rounded-xl border border-slate-200 text-xs space-y-1">
                 <div className="flex justify-between">
-                  <span className="text-slate-500">Waktu Rekam:</span>
+                  <span className="text-slate-500">Waktu Clock-In:</span>
                   <span className="font-bold text-slate-800">
                     {new Date(selectedPhotoModal.clock_in).toLocaleString('id-ID')}
                   </span>
                 </div>
+                {selectedPhotoModal.clock_out && (
+                  <div className="flex justify-between">
+                    <span className="text-slate-500">Waktu Clock-Out:</span>
+                    <span className="font-bold text-slate-800">
+                      {new Date(selectedPhotoModal.clock_out).toLocaleString('id-ID')}
+                    </span>
+                  </div>
+                )}
                 <div className="flex justify-between">
                   <span className="text-slate-500">Lokasi Penugasan:</span>
                   <span className="font-bold text-[#004380]">{selectedPhotoModal.work_location}</span>
