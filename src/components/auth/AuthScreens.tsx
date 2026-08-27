@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { DslngLogo } from '../common/DslngLogo';
 import { User, Department, WorkLocation, Role } from '../../types';
 import { notifySuccess, notifyError } from '../../utils/notifications';
-import { Lock, Mail, User as UserIcon, Phone, Building2, MapPin, AlertCircle, ArrowRight, ShieldCheck } from 'lucide-react';
+import { Lock, Mail, User as UserIcon, Phone, Building2, MapPin, ArrowRight, ShieldCheck, Eye, EyeOff, KeyRound } from 'lucide-react';
 
 interface AuthProps {
   users: User[];
@@ -30,10 +30,14 @@ export const AuthScreens: React.FC<AuthProps> = ({
   // Login fields
   const [loginEmail, setLoginEmail] = useState('');
   const [loginPassword, setLoginPassword] = useState('');
+  const [showLoginPassword, setShowLoginPassword] = useState(false);
 
   // Register fields
   const [regName, setRegName] = useState('');
   const [regEmail, setRegEmail] = useState('');
+  const [regPassword, setRegPassword] = useState('');
+  const [regConfirmPassword, setRegConfirmPassword] = useState('');
+  const [showRegPassword, setShowRegPassword] = useState(false);
   const [regDepartment, setRegDepartment] = useState<Department>('Operations Directorate');
   const [regWorkLocation, setRegWorkLocation] = useState<WorkLocation>('Site Luwuk');
   const [regExtension, setRegExtension] = useState('');
@@ -65,6 +69,12 @@ export const AuthScreens: React.FC<AuthProps> = ({
     triggerLogin(foundUser);
   };
 
+  const handleQuickFillAdmin = () => {
+    setLoginEmail('admin.ict@dslng.com');
+    setLoginPassword('P@sswo4d');
+    notifySuccess('Kredensial Administrator ICT terisi otomatis.');
+  };
+
   const handleRegister = (e: React.FormEvent) => {
     e.preventDefault();
     const email = regEmail.trim().toLowerCase();
@@ -86,23 +96,35 @@ export const AuthScreens: React.FC<AuthProps> = ({
       return;
     }
 
+    if (regPassword && regPassword.length < 6) {
+      notifyError('Password minimal harus 6 karakter.');
+      return;
+    }
+
+    if (regPassword && regConfirmPassword && regPassword !== regConfirmPassword) {
+      notifyError('Konfirmasi password tidak cocok dengan password yang dimasukkan.');
+      return;
+    }
+
+    const finalPassword = regPassword.trim() || 'DSLNG#2026';
+
     const newUser: User = {
       id: Date.now(),
       name: regName.trim(),
       email: email,
-      password: 'DSLNG#2026', // Automatically assigned default password
+      password: finalPassword,
       department: regDepartment,
       work_location: regWorkLocation,
       role: 'user', // Automatically defaults to standard staff/user
       extension: regExtension.trim() ? (regExtension.startsWith('x') ? regExtension : `x${regExtension}`) : 'x1000',
       created_at: new Date().toISOString(),
-      must_change_password: true,
+      must_change_password: false,
     };
 
     triggerRegister(newUser);
-    notifySuccess('Pendaftaran berhasil! Silakan login dengan akun Anda.');
+    notifySuccess('Pendaftaran berhasil! Akun Anda siap digunakan.');
     setLoginEmail(email);
-    setLoginPassword('');
+    setLoginPassword(finalPassword);
     setAuthMode('login');
   };
 
@@ -126,10 +148,10 @@ export const AuthScreens: React.FC<AuthProps> = ({
             </div>
             <div className="h-1 w-20 bg-gradient-to-r from-[#004380] via-[#00A3E0] to-emerald-400 mt-4 mb-3 rounded-full"></div>
             <h1 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight font-sans">
-              SISTEM INFORMASI ICT
+              Portal ICT Departement
             </h1>
             <p className="text-xs sm:text-sm text-slate-500 font-medium mt-0.5 max-w-sm">
-              Portal Layanan Teknologi Informasi & Operasional Kilang PT DSLNG
+              Sistem Layanan Teknologi Informasi & Operasional PT DSLNG
             </p>
           </div>
 
@@ -193,13 +215,21 @@ export const AuthScreens: React.FC<AuthProps> = ({
                 <div className="relative">
                   <Lock className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
                   <input
-                    type="password"
+                    type={showLoginPassword ? 'text' : 'password'}
                     required
                     value={loginPassword}
                     onChange={(e) => setLoginPassword(e.target.value)}
                     placeholder="••••••••"
-                    className="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-300 rounded-xl text-sm text-slate-900 focus:bg-white focus:ring-2 focus:ring-[#004380] focus:border-transparent outline-none transition"
+                    className="w-full pl-10 pr-11 py-3 bg-slate-50 border border-slate-300 rounded-xl text-sm text-slate-900 focus:bg-white focus:ring-2 focus:ring-[#004380] focus:border-transparent outline-none transition"
                   />
+                  <button
+                    type="button"
+                    onClick={() => setShowLoginPassword(!showLoginPassword)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 p-1"
+                    title={showLoginPassword ? 'Sembunyikan password' : 'Lihat password'}
+                  >
+                    {showLoginPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  </button>
                 </div>
               </div>
 
@@ -211,6 +241,18 @@ export const AuthScreens: React.FC<AuthProps> = ({
                 <span>Login</span>
                 <ArrowRight className="w-4 h-4" />
               </button>
+
+              {/* Demo Account Quick-Fill Helper */}
+              <div className="pt-2">
+                <button
+                  type="button"
+                  onClick={handleQuickFillAdmin}
+                  className="w-full py-2 px-3 bg-sky-50 hover:bg-sky-100 border border-sky-200 rounded-xl text-xs text-[#004380] font-semibold flex items-center justify-center gap-1.5 transition"
+                >
+                  <KeyRound className="w-3.5 h-3.5 text-[#00A3E0]" />
+                  <span>Isi Otomatis Akun Demo Admin (<span className="font-mono">admin.ict@dslng.com</span>)</span>
+                </button>
+              </div>
 
               <div className="text-center pt-2">
                 <p className="text-xs text-slate-500">
@@ -261,6 +303,49 @@ export const AuthScreens: React.FC<AuthProps> = ({
                     placeholder="ahmad.faisal@dslng.com"
                     className="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-sm focus:bg-white focus:ring-2 focus:ring-[#004380] outline-none transition font-medium"
                   />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
+                    Password
+                  </label>
+                  <div className="relative">
+                    <Lock className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                    <input
+                      type={showRegPassword ? 'text' : 'password'}
+                      required
+                      value={regPassword}
+                      onChange={(e) => setRegPassword(e.target.value)}
+                      placeholder="Min. 6 karakter"
+                      className="w-full pl-10 pr-10 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-sm focus:bg-white focus:ring-2 focus:ring-[#004380] outline-none transition font-medium"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowRegPassword(!showRegPassword)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 p-1"
+                    >
+                      {showRegPassword ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
+                    </button>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
+                    Konfirmasi Password
+                  </label>
+                  <div className="relative">
+                    <Lock className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                    <input
+                      type={showRegPassword ? 'text' : 'password'}
+                      required
+                      value={regConfirmPassword}
+                      onChange={(e) => setRegConfirmPassword(e.target.value)}
+                      placeholder="Ulangi password"
+                      className="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-sm focus:bg-white focus:ring-2 focus:ring-[#004380] outline-none transition font-medium"
+                    />
+                  </div>
                 </div>
               </div>
 
@@ -330,7 +415,7 @@ export const AuthScreens: React.FC<AuthProps> = ({
                 id="btn-submit-register"
                 className="w-full py-3.5 bg-[#00A3E0] hover:bg-[#0284C7] text-white font-bold rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 flex items-center justify-center gap-2 text-sm sm:text-base mt-2"
               >
-                <span>Register</span>
+                <span>Register Akun Baru</span>
                 <ArrowRight className="w-4 h-4" />
               </button>
 
@@ -361,3 +446,4 @@ export const AuthScreens: React.FC<AuthProps> = ({
     </div>
   );
 };
+

@@ -73,20 +73,7 @@ export function App() {
     return INITIAL_USERS;
   });
 
-  const [currentUser, setCurrentUser] = useState<User | null>(() => {
-    try {
-      const saved = localStorage.getItem('dslng_current_user');
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        if (parsed && typeof parsed === 'object' && parsed.id) {
-          return sanitizeUser(parsed, 1);
-        }
-      }
-    } catch (e) {
-      console.error(e);
-    }
-    return null; // Always show Login page by default
-  });
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
 
   // Navigation Module
   const [activeModule, setActiveModule] = useState<string>('dashboard');
